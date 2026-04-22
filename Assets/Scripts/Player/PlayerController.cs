@@ -57,15 +57,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        if (playerHealth == null)
-        {
-            playerHealth = GetComponent<PlayerHealth>();
-        }
-
-        if (metrics == null)
-        {
-            metrics = FindFirstObjectByType<GameMetrics>();
-        }
+        EnsureRuntimeReferences();
 
         if (attackPoint != null)
         {
@@ -120,6 +112,24 @@ public class PlayerController : MonoBehaviour
 
         UpdateAnimator();
         FlipCharacter();
+    }
+
+    private void EnsureRuntimeReferences()
+    {
+        if (playerHealth == null)
+        {
+            playerHealth = GetComponent<PlayerHealth>();
+        }
+
+        if (metrics == null)
+        {
+            metrics = GameMetrics.Instance;
+        }
+
+        if (gameOverUI == null)
+        {
+            gameOverUI = FindFirstObjectByType<GameOverUI>();
+        }
     }
 
     public void ApplyProgressStats()
@@ -486,6 +496,8 @@ public class PlayerController : MonoBehaviour
 
         if (collision.CompareTag("Death"))
         {
+            EnsureRuntimeReferences();
+
             if (playerHealth != null)
             {
                 playerHealth.ApplyDeathTrapEffect();
@@ -502,6 +514,8 @@ public class PlayerController : MonoBehaviour
         if (isDead)
             return;
 
+        EnsureRuntimeReferences();
+
         isDead = true;
         isAttacking = false;
         isInputLocked = true;
@@ -510,6 +524,10 @@ public class PlayerController : MonoBehaviour
         if (metrics != null)
         {
             metrics.RegisterDeath();
+        }
+        else
+        {
+            Debug.LogWarning("PlayerController: GameMetrics not found, death was not registered.");
         }
 
         PlayerProgress.Instance.SetCurrentHealth(0);
@@ -534,6 +552,8 @@ public class PlayerController : MonoBehaviour
 
     public void OnDeathAnimationFinished()
     {
+        EnsureRuntimeReferences();
+
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;

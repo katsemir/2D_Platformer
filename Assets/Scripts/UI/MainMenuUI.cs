@@ -47,32 +47,12 @@ public class MainMenuUI : MonoBehaviour
             return;
 
         appLaunchResetDone = true;
-
-        if (PlayerProgress.Instance != null)
-        {
-            PlayerProgress.Instance.ResetAllProgress();
-        }
-
-        if (GameMetrics.Instance != null)
-        {
-            GameMetrics.Instance.ResetAllMetrics();
-        }
-
-        if (DynamicDifficultyManager.Instance != null)
-        {
-            DynamicDifficultyManager.Instance.ResetModelState();
-        }
-
-        PlayerPrefs.DeleteKey("HasCheckpoint");
-        PlayerPrefs.DeleteKey("CheckpointX");
-        PlayerPrefs.DeleteKey("CheckpointY");
-        PlayerPrefs.DeleteKey("CheckpointScene");
-        PlayerPrefs.Save();
+        ResetFullGameState();
 
         Debug.Log("MainMenuUI -> Fresh launch reset completed.");
     }
 
-    public void PlayNewGame()
+    public static void ResetFullGameState()
     {
         if (PlayerProgress.Instance != null)
         {
@@ -94,6 +74,11 @@ public class MainMenuUI : MonoBehaviour
         PlayerPrefs.DeleteKey("CheckpointY");
         PlayerPrefs.DeleteKey("CheckpointScene");
         PlayerPrefs.Save();
+    }
+
+    public void PlayNewGame()
+    {
+        ResetFullGameState();
 
         Time.timeScale = 1f;
         SceneManager.LoadScene(firstLevelScene);

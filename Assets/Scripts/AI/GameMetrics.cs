@@ -3,7 +3,30 @@ using UnityEngine.SceneManagement;
 
 public class GameMetrics : MonoBehaviour
 {
-    public static GameMetrics Instance { get; private set; }
+    public static GameMetrics Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                GameMetrics existing = FindFirstObjectByType<GameMetrics>();
+
+                if (existing != null)
+                {
+                    instance = existing;
+                }
+                else
+                {
+                    GameObject metricsObject = new GameObject("GameMetrics");
+                    instance = metricsObject.AddComponent<GameMetrics>();
+                }
+            }
+
+            return instance;
+        }
+    }
+
+    private static GameMetrics instance;
 
     private const string DeathsKey = "Metrics_Deaths";
     private const string HealthLostKey = "Metrics_HealthLost";
@@ -28,6 +51,15 @@ public class GameMetrics : MonoBehaviour
 
     [Header("Difficulty Debug")]
     [SerializeField] private DynamicDifficultyManager difficultyManager;
+
+    [Header("Level Entry Snapshot")]
+    [SerializeField] private bool hasLevelEntrySnapshot = false;
+    [SerializeField] private string levelEntrySceneName = "";
+    [SerializeField] private int levelEntryTotalCoinsCollected = 0;
+    [SerializeField] private int levelEntryEnemiesKilled = 0;
+    [SerializeField] private float levelEntryCurrentLevelTime = 0f;
+    [SerializeField] private float levelEntryLastCompletedLevelTime = 0f;
+    [SerializeField] private bool levelEntryLastLevelCompleted = false;
 
     public int Deaths
     {
@@ -80,7 +112,7 @@ public class GameMetrics : MonoBehaviour
         {
             if (difficultyManager == null)
             {
-                difficultyManager = FindFirstObjectByType<DynamicDifficultyManager>();
+                difficultyManager = DynamicDifficultyManager.Instance;
             }
 
             if (difficultyManager == null)
@@ -97,13 +129,13 @@ public class GameMetrics : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        Instance = this;
+        instance = this;
         DontDestroyOnLoad(gameObject);
         LoadMetrics();
     }
@@ -112,7 +144,7 @@ public class GameMetrics : MonoBehaviour
     {
         if (difficultyManager == null)
         {
-            difficultyManager = FindFirstObjectByType<DynamicDifficultyManager>();
+            difficultyManager = DynamicDifficultyManager.Instance;
         }
     }
 
@@ -138,8 +170,10 @@ public class GameMetrics : MonoBehaviour
 
         if (difficultyManager == null)
         {
-            difficultyManager = FindFirstObjectByType<DynamicDifficultyManager>();
+            difficultyManager = DynamicDifficultyManager.Instance;
         }
+
+        CaptureLevelEntrySnapshot(scene.name);
     }
 
     private void LoadMetrics()
@@ -213,6 +247,68 @@ public class GameMetrics : MonoBehaviour
         Debug.Log("GameMetrics -> Last Level Result marked as failed.");
     }
 
+    public void CaptureLevelEntrySnapshot()
+    {
+        CaptureLevelEntrySnapshot(SceneManager.GetActiveScene().name);
+    }
+
+    public void CaptureLevelEntrySnapshot(string sceneName)
+    {
+        levelEntrySceneName = sceneName;
+        levelEntryTotalCoinsCollected = totalCoinsCollected;
+        levelEntryEnemiesKilled = enemiesKilled;
+        levelEntryCurrentLevelTime = 0f;
+        levelEntryLastCompletedLevelTime = lastCompletedLevelTime;
+        levelEntryLastLevelCompleted = lastLevelCompleted;
+        hasLevelEntrySnapshot = true;
+
+        Debug.Log("GameMetrics -> Level entry snapshot captured for scene: " + levelEntrySceneName);
+    }
+
+    public bool RestoreLevelEntrySnapshotForCurrentScene()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name;
+
+        if (!hasLevelEntrySnapshot)
+        {
+            Debug.LogWarning("GameMetrics -> No level entry snapshot to restore.");
+            return false;
+        }
+
+        if (levelEntrySceneName != currentSceneName)
+        {
+            Debug.LogWarning(
+                "GameMetrics -> Snapshot scene mismatch. Current: " +
+                currentSceneName +
+                ", Snapshot: " +
+                levelEntrySceneName
+            );
+            return false;
+        }
+
+        totalCoinsCollected = levelEntryTotalCoinsCollected;
+        enemiesKilled = levelEntryEnemiesKilled;
+        currentLevelTime = levelEntryCurrentLevelTime;
+        lastCompletedLevelTime = levelEntryLastCompletedLevelTime;
+        lastLevelCompleted = levelEntryLastLevelCompleted;
+
+        SaveMetrics();
+
+        Debug.Log("GameMetrics -> Level entry snapshot restored for scene: " + currentSceneName);
+        return true;
+    }
+
+    public void ClearLevelEntrySnapshot()
+    {
+        hasLevelEntrySnapshot = false;
+        levelEntrySceneName = "";
+        levelEntryTotalCoinsCollected = 0;
+        levelEntryEnemiesKilled = 0;
+        levelEntryCurrentLevelTime = 0f;
+        levelEntryLastCompletedLevelTime = 0f;
+        levelEntryLastLevelCompleted = false;
+    }
+
     public void ResetAllMetrics()
     {
         deaths = 0;
@@ -223,6 +319,8 @@ public class GameMetrics : MonoBehaviour
         currentLevelTime = 0f;
         lastCompletedLevelTime = 0f;
         lastLevelCompleted = false;
+
+        ClearLevelEntrySnapshot();
 
         PlayerPrefs.DeleteKey(DeathsKey);
         PlayerPrefs.DeleteKey(HealthLostKey);

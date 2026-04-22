@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerProgress : MonoBehaviour
 {
@@ -43,6 +44,16 @@ public class PlayerProgress : MonoBehaviour
     [SerializeField] private bool dashUnlocked = false;
     [SerializeField] private int currentHealth = 3;
 
+    [Header("Level Entry Snapshot")]
+    [SerializeField] private bool hasLevelEntrySnapshot = false;
+    [SerializeField] private string levelEntrySceneName = "";
+    [SerializeField] private int levelEntryTotalCoins = 0;
+    [SerializeField] private int levelEntryDamageLevel = 0;
+    [SerializeField] private int levelEntrySpeedLevel = 0;
+    [SerializeField] private bool levelEntryDoubleJumpUnlocked = false;
+    [SerializeField] private bool levelEntryDashUnlocked = false;
+    [SerializeField] private int levelEntryCurrentHealth = 3;
+
     public int TotalCoins
     {
         get { return totalCoins; }
@@ -86,6 +97,21 @@ public class PlayerProgress : MonoBehaviour
         LoadProgress();
     }
 
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        CaptureLevelEntrySnapshot(scene.name);
+    }
+
     public void LoadProgress()
     {
         totalCoins = PlayerPrefs.GetInt(TotalCoinsKey, 0);
@@ -115,6 +141,8 @@ public class PlayerProgress : MonoBehaviour
         doubleJumpUnlocked = false;
         dashUnlocked = false;
         currentHealth = 3;
+
+        ClearLevelEntrySnapshot();
 
         PlayerPrefs.DeleteKey(TotalCoinsKey);
         PlayerPrefs.DeleteKey(DamageLevelKey);
@@ -227,5 +255,73 @@ public class PlayerProgress : MonoBehaviour
         PlayerPrefs.SetInt(DashUnlockedKey, 1);
         PlayerPrefs.Save();
         return true;
+    }
+
+    public void CaptureLevelEntrySnapshot()
+    {
+        CaptureLevelEntrySnapshot(SceneManager.GetActiveScene().name);
+    }
+
+    public void CaptureLevelEntrySnapshot(string sceneName)
+    {
+        levelEntrySceneName = sceneName;
+        levelEntryTotalCoins = totalCoins;
+        levelEntryDamageLevel = damageLevel;
+        levelEntrySpeedLevel = speedLevel;
+        levelEntryDoubleJumpUnlocked = doubleJumpUnlocked;
+        levelEntryDashUnlocked = dashUnlocked;
+        levelEntryCurrentHealth = currentHealth;
+        hasLevelEntrySnapshot = true;
+
+        Debug.Log("PlayerProgress -> Level entry snapshot captured for scene: " + levelEntrySceneName);
+    }
+
+    public bool RestoreLevelEntrySnapshotForCurrentScene()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name;
+
+        if (!hasLevelEntrySnapshot)
+        {
+            Debug.LogWarning("PlayerProgress -> No level entry snapshot to restore.");
+            return false;
+        }
+
+        if (levelEntrySceneName != currentSceneName)
+        {
+            Debug.LogWarning(
+                "PlayerProgress -> Snapshot scene mismatch. Current: " +
+                currentSceneName +
+                ", Snapshot: " +
+                levelEntrySceneName
+            );
+            return false;
+        }
+
+        totalCoins = levelEntryTotalCoins;
+        damageLevel = levelEntryDamageLevel;
+        speedLevel = levelEntrySpeedLevel;
+        doubleJumpUnlocked = levelEntryDoubleJumpUnlocked;
+        dashUnlocked = levelEntryDashUnlocked;
+        currentHealth = levelEntryCurrentHealth;
+
+        SaveProgress();
+
+        PlayerPrefs.SetInt(HealthInitializedKey, 1);
+        PlayerPrefs.Save();
+
+        Debug.Log("PlayerProgress -> Level entry snapshot restored for scene: " + currentSceneName);
+        return true;
+    }
+
+    public void ClearLevelEntrySnapshot()
+    {
+        hasLevelEntrySnapshot = false;
+        levelEntrySceneName = "";
+        levelEntryTotalCoins = 0;
+        levelEntryDamageLevel = 0;
+        levelEntrySpeedLevel = 0;
+        levelEntryDoubleJumpUnlocked = false;
+        levelEntryDashUnlocked = false;
+        levelEntryCurrentHealth = 3;
     }
 }

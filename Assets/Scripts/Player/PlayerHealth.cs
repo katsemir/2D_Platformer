@@ -38,7 +38,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (metrics == null)
         {
-            metrics = FindFirstObjectByType<GameMetrics>();
+            metrics = GameMetrics.Instance;
         }
 
         if (difficultyManager == null)
@@ -63,6 +63,14 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    private void EnsureMetricsReference()
+    {
+        if (metrics == null)
+        {
+            metrics = GameMetrics.Instance;
+        }
+    }
+
     public void TakeDamage(int damage)
     {
         if (isDead)
@@ -73,6 +81,8 @@ public class PlayerHealth : MonoBehaviour
 
         if (IsInvulnerable)
             return;
+
+        EnsureMetricsReference();
 
         int previousHealth = currentHealth;
 
@@ -113,6 +123,8 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead)
             return;
+
+        EnsureMetricsReference();
 
         bool shouldDamageInsteadOfInstantDeath =
             difficultyManager != null &&

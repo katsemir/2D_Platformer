@@ -9,7 +9,30 @@ public class DynamicDifficultyManager : MonoBehaviour
         Hard
     }
 
-    public static DynamicDifficultyManager Instance { get; private set; }
+    public static DynamicDifficultyManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                DynamicDifficultyManager existing = FindFirstObjectByType<DynamicDifficultyManager>();
+
+                if (existing != null)
+                {
+                    instance = existing;
+                }
+                else
+                {
+                    GameObject ddaObject = new GameObject("DynamicDifficultyManager");
+                    instance = ddaObject.AddComponent<DynamicDifficultyManager>();
+                }
+            }
+
+            return instance;
+        }
+    }
+
+    private static DynamicDifficultyManager instance;
 
     [Header("References")]
     public GameMetrics metrics;
@@ -225,13 +248,13 @@ public class DynamicDifficultyManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        Instance = this;
+        instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
@@ -239,7 +262,7 @@ public class DynamicDifficultyManager : MonoBehaviour
     {
         if (metrics == null)
         {
-            metrics = FindFirstObjectByType<GameMetrics>();
+            metrics = GameMetrics.Instance;
         }
 
         EvaluateDifficulty();
@@ -263,7 +286,7 @@ public class DynamicDifficultyManager : MonoBehaviour
     {
         if (metrics == null)
         {
-            metrics = FindFirstObjectByType<GameMetrics>();
+            metrics = GameMetrics.Instance;
         }
 
         if (metrics == null)
@@ -342,6 +365,7 @@ public class DynamicDifficultyManager : MonoBehaviour
         rawScore = 0.5f;
         smoothedScore = 0.5f;
         currentDifficulty = DifficultyTier.Normal;
+        evaluationTimer = 0f;
     }
 
     private float NormalizeDirect(float value, float maxValue)
