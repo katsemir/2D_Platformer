@@ -6,20 +6,51 @@ public class TimerUI : MonoBehaviour
     public GameMetrics metrics;
     public TMP_Text timerText;
 
-    void Awake()
+    private void Awake()
     {
-        if (metrics == null)
-        {
-            metrics = FindFirstObjectByType<GameMetrics>();
-        }
+        ResolveReferences();
+        UpdateTimerText(0f);
     }
 
-    void Update()
+    private void OnEnable()
     {
+        ResolveReferences();
+        UpdateTimerText(0f);
+    }
+
+    private void Update()
+    {
+        ResolveReferences();
+
         if (metrics == null || timerText == null)
             return;
 
-        float time = metrics.TimeAlive;
+        float time = metrics.CurrentLevelTime;
+        UpdateTimerText(time);
+    }
+
+    private void ResolveReferences()
+    {
+        if (metrics == null)
+        {
+            metrics = GameMetrics.Instance;
+        }
+
+        if (timerText == null)
+        {
+            timerText = GetComponent<TMP_Text>();
+        }
+    }
+
+    private void UpdateTimerText(float time)
+    {
+        if (timerText == null)
+            return;
+
+        if (time < 0f)
+        {
+            time = 0f;
+        }
 
         int minutes = Mathf.FloorToInt(time / 60f);
         int seconds = Mathf.FloorToInt(time % 60f);
