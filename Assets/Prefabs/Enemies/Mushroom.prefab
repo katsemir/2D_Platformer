@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 6283956315717998047}
   - component: {fileID: 1332036160709406330}
   - component: {fileID: 6053428553674891520}
-  - component: {fileID: 490218342991464609}
   - component: {fileID: 1219420614709744682}
+  - component: {fileID: 5561036135953721041}
   m_Layer: 0
   m_Name: Mushroom
   m_TagString: Enemy
@@ -29,7 +29,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1811487171925203729}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 5.4, y: -1.9, z: 0}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
@@ -170,35 +170,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.78125, y: 1.21875}
   m_EdgeRadius: 0
---- !u!114 &490218342991464609
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1811487171925203729}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11872369bd65d49e98be93e2b98445c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MushroomEnemy
-  maxHealth: 3
-  player: {fileID: 0}
-  moveSpeed: 2
-  aggroRange: 8
-  meleeRange: 5
-  rangedRange: 10
-  stopDistance: 0.9
-  contactDamage: 1
-  attackCooldown: 2
-  attackPoint: {fileID: 5733170923649510408}
-  meleeAttackRadius: 1
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  projectilePrefab: {fileID: 8353600122656611103, guid: 67c7ea9fb590e4db4a57d3b9608255f2, type: 3}
-  projectileSpawnPoint: {fileID: 310926310506432315}
-  projectileSpeed: 5
 --- !u!95 &1219420614709744682
 Animator:
   serializedVersion: 7
@@ -221,6 +192,38 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5561036135953721041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1811487171925203729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac8f058b1d93047b3915f6410d736f57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MushroomEnemy
+  maxHealth: 1
+  player: {fileID: 0}
+  moveSpeed: 2
+  aggroRange: 8
+  meleeRange: 1.5
+  rangedRange: 5
+  stopDistance: 0.9
+  contactDamage: 1
+  attackCooldown: 2
+  attackPoint: {fileID: 0}
+  meleeAttackRadius: 1
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  contactDamageCooldown: 1
+  projectilePrefab: {fileID: 0}
+  projectileSpawnPoint: {fileID: 0}
+  projectileSpeed: 10
+  projectileDamage: 1
+  difficultyManager: {fileID: 0}
 --- !u!1 &2780673523583634560
 GameObject:
   m_ObjectHideFlags: 0

@@ -51,6 +51,11 @@ public class PlayerController : MonoBehaviour
     private Vector3 attackPointStartLocalPosition;
     private int groundContacts = 0;
 
+    private float mobileMoveInput = 0f;
+    private bool mobileJumpPressed = false;
+    private bool mobileAttackPressed = false;
+    private bool mobileDashPressed = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -79,6 +84,7 @@ public class PlayerController : MonoBehaviour
         if (isDead)
             return;
 
+        RefreshAbilityUnlocks();
         UpdateDashState();
 
         if (isInputLocked)
@@ -86,6 +92,7 @@ public class PlayerController : MonoBehaviour
             StopHorizontalMovementKeepVertical();
             UpdateAnimator();
             FlipCharacter();
+            ClearMobileOneFrameInputs();
             return;
         }
 
@@ -94,6 +101,7 @@ public class PlayerController : MonoBehaviour
             HandleDashMovement();
             UpdateAnimator();
             FlipCharacter();
+            ClearMobileOneFrameInputs();
             return;
         }
 
@@ -112,6 +120,7 @@ public class PlayerController : MonoBehaviour
 
         UpdateAnimator();
         FlipCharacter();
+        ClearMobileOneFrameInputs();
     }
 
     private void EnsureRuntimeReferences()
@@ -175,7 +184,9 @@ public class PlayerController : MonoBehaviour
         if (rb == null)
             return;
 
-        float move = Input.GetAxis("Horizontal");
+        float keyboardMove = Input.GetAxis("Horizontal");
+        float move = Mathf.Abs(mobileMoveInput) > 0.01f ? mobileMoveInput : keyboardMove;
+
         rb.linearVelocity = new Vector2(move * moveSpeed, rb.linearVelocity.y);
     }
 
@@ -184,7 +195,9 @@ public class PlayerController : MonoBehaviour
         if (rb == null)
             return;
 
-        if (!Input.GetButtonDown("Jump"))
+        bool jumpPressed = Input.GetButtonDown("Jump") || mobileJumpPressed;
+
+        if (!jumpPressed)
             return;
 
         if (isGrounded)
@@ -210,7 +223,9 @@ public class PlayerController : MonoBehaviour
         if (rb == null)
             return;
 
-        if (!Input.GetKeyDown(dashKey))
+        bool dashPressed = Input.GetKeyDown(dashKey) || mobileDashPressed;
+
+        if (!dashPressed)
             return;
 
         if (Time.time < lastDashTime + dashCooldown)
@@ -229,7 +244,8 @@ public class PlayerController : MonoBehaviour
         dashTimer = dashDuration;
         lastDashTime = Time.time;
 
-        float moveInput = Input.GetAxisRaw("Horizontal");
+        float keyboardMove = Input.GetAxisRaw("Horizontal");
+        float moveInput = Mathf.Abs(mobileMoveInput) > 0.01f ? mobileMoveInput : keyboardMove;
 
         if (Mathf.Abs(moveInput) > 0.1f)
         {
@@ -302,7 +318,7 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
-        bool attackPressed = Input.GetKeyDown(attackKey) || Input.GetButtonDown("Fire1");
+        bool attackPressed = Input.GetKeyDown(attackKey) || Input.GetButtonDown("Fire1") || mobileAttackPressed;
 
         if (!attackPressed)
             return;
@@ -353,6 +369,48 @@ public class PlayerController : MonoBehaviour
     public void EndAttack()
     {
         isAttacking = false;
+    }
+
+    public void MobileMoveLeftDown()
+    {
+        mobileMoveInput = -1f;
+    }
+
+    public void MobileMoveRightDown()
+    {
+        mobileMoveInput = 1f;
+    }
+
+    public void MobileMoveButtonUp()
+    {
+        mobileMoveInput = 0f;
+    }
+
+    public void MobileJump()
+    {
+        mobileJumpPressed = true;
+    }
+
+    public void MobileAttack()
+    {
+        mobileAttackPressed = true;
+    }
+
+    public void MobileDash()
+    {
+        mobileDashPressed = true;
+    }
+
+    public bool IsDashUnlocked()
+    {
+        return PlayerProgress.Instance.DashUnlocked;
+    }
+
+    private void ClearMobileOneFrameInputs()
+    {
+        mobileJumpPressed = false;
+        mobileAttackPressed = false;
+        mobileDashPressed = false;
     }
 
     void UpdateAnimator()
