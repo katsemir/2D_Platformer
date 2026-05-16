@@ -46,26 +46,26 @@ public class DynamicDifficultyManager : MonoBehaviour
 
     [Header("Normalization Limits")]
     public float maxDeathsForNormalization = 5f;
-    public float maxHealthLostForNormalization = 10f;
+    public float maxHealthLostForNormalization = 15f;
     public float maxCoinsForNormalization = 20f;
-    public float maxEnemiesKilledForNormalization = 15f;
-    public float bestLevelTime = 30f;
-    public float worstLevelTime = 120f;
+    public float maxEnemiesKilledForNormalization = 5f;
+    public float bestLevelTime = 120f;
+    public float worstLevelTime = 180f;
 
     [Header("Model Weights")]
-    [Range(0f, 1f)] public float deathsWeight = 0.25f;
+    [Range(0f, 1f)] public float deathsWeight = 0.30f;
     [Range(0f, 1f)] public float healthLostWeight = 0.25f;
     [Range(0f, 1f)] public float coinsWeight = 0.15f;
     [Range(0f, 1f)] public float enemiesKilledWeight = 0.15f;
-    [Range(0f, 1f)] public float levelCompletedWeight = 0.15f;
-    [Range(0f, 1f)] public float levelTimeWeight = 0.05f;
+    [Range(0f, 1f)] public float levelCompletedWeight = 0.05f;
+    [Range(0f, 1f)] public float levelTimeWeight = 0.10f;
 
     [Header("Score Smoothing")]
     [Range(0f, 1f)] public float rawScoreInfluence = 0.7f;
 
     [Header("Difficulty Thresholds")]
-    [Range(0f, 1f)] public float easyThreshold = 0.40f;
-    [Range(0f, 1f)] public float hardThreshold = 0.75f;
+    [Range(0f, 1f)] public float easyThreshold = 0.33f;
+    [Range(0f, 1f)] public float hardThreshold = 0.66f;
 
     [Header("Current Debug Values")]
     [SerializeField] private float normalizedDeaths = 0f;
@@ -78,22 +78,22 @@ public class DynamicDifficultyManager : MonoBehaviour
     [SerializeField] private float smoothedScore = 0.5f;
 
     [Header("Platform Multipliers")]
-    public float easyPlatformSpeedMultiplier = 0.75f;
+    public float easyPlatformSpeedMultiplier = 0.5f;
     public float normalPlatformSpeedMultiplier = 1f;
-    public float hardPlatformSpeedMultiplier = 1.35f;
+    public float hardPlatformSpeedMultiplier = 1.5f;
 
     [Header("Enemy Movement")]
-    public float easyEnemyMoveSpeedMultiplier = 0.65f;
+    public float easyEnemyMoveSpeedMultiplier = 0.5f;
     public float normalEnemyMoveSpeedMultiplier = 1f;
-    public float hardEnemyMoveSpeedMultiplier = 1.20f;
+    public float hardEnemyMoveSpeedMultiplier = 1.5f;
 
     [Header("Enemy Aggro Range")]
-    public float easyEnemyAggroRangeMultiplier = 0.45f;
+    public float easyEnemyAggroRangeMultiplier = 0.5f;
     public float normalEnemyAggroRangeMultiplier = 1f;
-    public float hardEnemyAggroRangeMultiplier = 1.35f;
+    public float hardEnemyAggroRangeMultiplier = 1.5f;
 
     [Header("Enemy Melee Cooldown")]
-    public float easyEnemyMeleeCooldownMultiplier = 1.50f;
+    public float easyEnemyMeleeCooldownMultiplier = 1.25f;
     public float normalEnemyMeleeCooldownMultiplier = 1f;
     public float hardEnemyMeleeCooldownMultiplier = 0.75f;
 
@@ -299,6 +299,22 @@ public class DynamicDifficultyManager : MonoBehaviour
         normalizedLevelTime = NormalizeInverse(metrics.LastCompletedLevelTime, bestLevelTime, worstLevelTime);
         normalizedLevelCompleted = metrics.LastLevelCompleted ? 1f : 0f;
 
+        if (!HasAnyPlayerPerformanceData())
+        {
+            rawScore = 0.5f;
+            smoothedScore = 0.5f;
+            currentDifficulty = DifficultyTier.Normal;
+
+            Debug.Log(
+                "DDA -> Difficulty: " + currentDifficulty +
+                " | RawScore: " + rawScore.ToString("0.000") +
+                " | SmoothedScore: " + smoothedScore.ToString("0.000") +
+                " | No player data"
+            );
+
+            return;
+        }
+
         float totalWeight =
             deathsWeight +
             healthLostWeight +
@@ -366,6 +382,19 @@ public class DynamicDifficultyManager : MonoBehaviour
         smoothedScore = 0.5f;
         currentDifficulty = DifficultyTier.Normal;
         evaluationTimer = 0f;
+    }
+
+    private bool HasAnyPlayerPerformanceData()
+    {
+        if (metrics == null)
+            return false;
+
+        return metrics.Deaths > 0 ||
+               metrics.TotalHealthLost > 0 ||
+               metrics.TotalCoinsCollected > 0 ||
+               metrics.EnemiesKilled > 0 ||
+               metrics.LastCompletedLevelTime > 0f ||
+               metrics.LastLevelCompleted;
     }
 
     private float NormalizeDirect(float value, float maxValue)

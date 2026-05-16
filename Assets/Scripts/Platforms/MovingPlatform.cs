@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class MovingPlatform : MonoBehaviour
 {
     public enum MoveAxis
@@ -8,8 +9,18 @@ public class MovingPlatform : MonoBehaviour
         Vertical
     }
 
+    public enum StartDirection
+    {
+        Positive,
+        Negative
+    }
+
     [Header("Movement")]
     public MoveAxis moveAxis = MoveAxis.Horizontal;
+
+    [Tooltip("Positive: Horizontal = Right, Vertical = Up. Negative: Horizontal = Left, Vertical = Down.")]
+    public StartDirection startDirection = StartDirection.Positive;
+
     public float moveDistance = 3f;
     public float moveSpeed = 2f;
     public bool startFromCurrentPosition = true;
@@ -17,43 +28,85 @@ public class MovingPlatform : MonoBehaviour
     [Header("Difficulty")]
     public DynamicDifficultyManager difficultyManager;
 
-    private Vector3 startPosition;
-    private Vector3 targetPosition;
+    private Rigidbody2D rb;
+
+    private Vector2 startPosition;
+    private Vector2 targetPosition;
     private bool movingToTarget = true;
-    private bool isShuttingDown = false;
+
     private float baseMoveSpeed;
 
-    void Start()
+    private Rigidbody2D playerRb;
+    private bool playerOnPlatform = false;
+
+    private Vector2 previousPlatformPosition;
+    private Vector2 platformDelta;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        rb.gravityScale = 0f;
+        rb.freezeRotation = true;
+    }
+
+    private void Start()
     {
         if (difficultyManager == null)
         {
             difficultyManager = FindFirstObjectByType<DynamicDifficultyManager>();
         }
 
-        startPosition = transform.position;
+        startPosition = rb.position;
+        previousPlatformPosition = rb.position;
+
         baseMoveSpeed = moveSpeed;
+
         UpdateTargetPosition();
     }
 
-    void Update()
+    private void FixedUpdate()
     {
         ApplyDifficultySpeed();
+        MovePlatform();
+        MovePlayerWithPlatform();
+    }
 
-        Vector3 destination = movingToTarget ? targetPosition : startPosition;
+    private void MovePlatform()
+    {
+        Vector2 destination = movingToTarget ? targetPosition : startPosition;
 
-        transform.position = Vector3.MoveTowards(
-            transform.position,
+        Vector2 newPosition = Vector2.MoveTowards(
+            rb.position,
             destination,
-            moveSpeed * Time.deltaTime
+            moveSpeed * Time.fixedDeltaTime
         );
 
-        if (Vector3.Distance(transform.position, destination) < 0.01f)
+        platformDelta = newPosition - rb.position;
+
+        rb.MovePosition(newPosition);
+
+        if (Vector2.Distance(newPosition, destination) < 0.01f)
         {
             movingToTarget = !movingToTarget;
         }
+
+        previousPlatformPosition = newPosition;
     }
 
-    void ApplyDifficultySpeed()
+    private void MovePlayerWithPlatform()
+    {
+        if (!playerOnPlatform)
+            return;
+
+        if (playerRb == null)
+            return;
+
+        playerRb.position += platformDelta;
+    }
+
+    private void ApplyDifficultySpeed()
     {
         if (difficultyManager == null)
         {
@@ -64,59 +117,82 @@ public class MovingPlatform : MonoBehaviour
         moveSpeed = baseMoveSpeed * difficultyManager.PlatformSpeedMultiplier;
     }
 
-    void UpdateTargetPosition()
+    private void UpdateTargetPosition()
     {
+        float distance = Mathf.Abs(moveDistance);
+        float direction = startDirection == StartDirection.Positive ? 1f : -1f;
+
         if (moveAxis == MoveAxis.Horizontal)
         {
-            targetPosition = startPosition + new Vector3(moveDistance, 0f, 0f);
+            targetPosition = startPosition + new Vector2(distance * direction, 0f);
         }
         else
         {
-            targetPosition = startPosition + new Vector3(0f, moveDistance, 0f);
+            targetPosition = startPosition + new Vector2(0f, distance * direction);
         }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (isShuttingDown)
-            return;
+        TrySetPlayerOnPlatform(collision);
+    }
 
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            SafeSetParent(collision.transform, transform);
-        }
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        TrySetPlayerOnPlatform(collision);
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
-        if (isShuttingDown)
+        if (!collision.gameObject.CompareTag("Player"))
             return;
 
-        if (collision.gameObject.CompareTag("Player"))
+        Rigidbody2D exitingRb = collision.gameObject.GetComponent<Rigidbody2D>();
+
+        if (exitingRb == playerRb)
         {
-            SafeSetParent(collision.transform, null);
+            playerOnPlatform = false;
+            playerRb = null;
         }
     }
 
-    private void SafeSetParent(Transform child, Transform parent)
+    private void TrySetPlayerOnPlatform(Collision2D collision)
     {
-        if (child == null)
+        if (!collision.gameObject.CompareTag("Player"))
             return;
 
-        if (!gameObject.activeInHierarchy)
+        if (!IsPlayerStandingOnTop(collision))
             return;
 
-        child.SetParent(parent);
+        playerRb = collision.gameObject.GetComponent<Rigidbody2D>();
+        playerOnPlatform = playerRb != null;
+    }
+
+    private bool IsPlayerStandingOnTop(Collision2D collision)
+    {
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            ContactPoint2D contact = collision.GetContact(i);
+
+            if (contact.normal.y < -0.5f)
+            {
+                return true;
+            }
+        }
+
+        return collision.transform.position.y > transform.position.y;
     }
 
     private void OnDisable()
     {
-        isShuttingDown = true;
+        playerOnPlatform = false;
+        playerRb = null;
     }
 
     private void OnDestroy()
     {
-        isShuttingDown = true;
+        playerOnPlatform = false;
+        playerRb = null;
     }
 
     private void OnDrawGizmosSelected()
@@ -124,13 +200,16 @@ public class MovingPlatform : MonoBehaviour
         Vector3 previewStart = transform.position;
         Vector3 previewEnd;
 
+        float distance = Mathf.Abs(moveDistance);
+        float direction = startDirection == StartDirection.Positive ? 1f : -1f;
+
         if (moveAxis == MoveAxis.Horizontal)
         {
-            previewEnd = previewStart + new Vector3(moveDistance, 0f, 0f);
+            previewEnd = previewStart + new Vector3(distance * direction, 0f, 0f);
         }
         else
         {
-            previewEnd = previewStart + new Vector3(0f, moveDistance, 0f);
+            previewEnd = previewStart + new Vector3(0f, distance * direction, 0f);
         }
 
         Gizmos.color = Color.green;

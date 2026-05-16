@@ -108,9 +108,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   moveAxis: 0
-  moveDistance: 3
+  startDirection: 0
+  moveDistance: 4
   moveSpeed: 2
   startFromCurrentPosition: 1
+  difficultyManager: {fileID: 0}
 --- !u!61 &4236162894177171493
 BoxCollider2D:
   m_ObjectHideFlags: 0

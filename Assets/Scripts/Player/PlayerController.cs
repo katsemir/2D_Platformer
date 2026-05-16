@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     public float baseMoveSpeed = 5f;
     public float moveSpeed = 5f;
-    public float jumpForce = 13f;
+    public float jumpForce = 15f;
 
     [Header("Attack")]
     public Transform attackPoint;
@@ -318,7 +318,7 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
-        bool attackPressed = Input.GetKeyDown(attackKey) || Input.GetButtonDown("Fire1") || mobileAttackPressed;
+        bool attackPressed = Input.GetKeyDown(attackKey) || mobileAttackPressed;
 
         if (!attackPressed)
             return;

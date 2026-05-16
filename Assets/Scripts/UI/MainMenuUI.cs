@@ -8,7 +8,6 @@ public class MainMenuUI : MonoBehaviour
     public string firstLevelScene = "SampleScene";
 
     [Header("UI")]
-    public Button continueButton;
     public Slider volumeSlider;
 
     private static bool appLaunchResetDone = false;
@@ -21,13 +20,6 @@ public class MainMenuUI : MonoBehaviour
     private void Start()
     {
         Time.timeScale = 1f;
-
-        bool hasCheckpoint = PlayerPrefs.GetInt("HasCheckpoint", 0) == 1;
-
-        if (continueButton != null)
-        {
-            continueButton.interactable = hasCheckpoint;
-        }
 
         float savedVolume = PlayerPrefs.GetFloat("MusicVolume", 1f);
 
@@ -48,8 +40,6 @@ public class MainMenuUI : MonoBehaviour
 
         appLaunchResetDone = true;
         ResetFullGameState();
-
-        Debug.Log("MainMenuUI -> Fresh launch reset completed.");
     }
 
     public static void ResetFullGameState()
@@ -68,12 +58,6 @@ public class MainMenuUI : MonoBehaviour
         {
             DynamicDifficultyManager.Instance.ResetModelState();
         }
-
-        PlayerPrefs.DeleteKey("HasCheckpoint");
-        PlayerPrefs.DeleteKey("CheckpointX");
-        PlayerPrefs.DeleteKey("CheckpointY");
-        PlayerPrefs.DeleteKey("CheckpointScene");
-        PlayerPrefs.Save();
     }
 
     public void PlayNewGame()
@@ -82,14 +66,6 @@ public class MainMenuUI : MonoBehaviour
 
         Time.timeScale = 1f;
         SceneManager.LoadScene(firstLevelScene);
-    }
-
-    public void ContinueGame()
-    {
-        string savedScene = PlayerPrefs.GetString("CheckpointScene", firstLevelScene);
-
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(savedScene);
     }
 
     public void QuitGame()

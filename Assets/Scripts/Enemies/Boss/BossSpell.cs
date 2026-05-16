@@ -6,11 +6,16 @@ public class BossSpell : MonoBehaviour
     public int damage = 1;
     public float lifeTime = 2f;
 
+    [Header("Damage Timing")]
+    public bool damageActiveOnStart = false;
+
     [Header("Visual Fix")]
     public int sortingOrder = 50;
     public bool forceVisible = true;
 
     private bool hasDealtDamage = false;
+    private bool damageIsActive = false;
+
     private SpriteRenderer spriteRenderer;
     private Collider2D spellCollider;
 
@@ -23,6 +28,8 @@ public class BossSpell : MonoBehaviour
         {
             MakeVisible();
         }
+
+        SetDamageActive(damageActiveOnStart);
     }
 
     private void Start()
@@ -40,12 +47,15 @@ public class BossSpell : MonoBehaviour
         damage = Mathf.Max(0, newDamage);
         lifeTime = Mathf.Max(0.2f, newLifeTime);
 
+        hasDealtDamage = false;
+
+        SetDamageActive(damageActiveOnStart);
+
         if (forceVisible)
         {
             MakeVisible();
         }
 
-        CancelInvoke();
         Destroy(gameObject, lifeTime);
     }
 
@@ -71,12 +81,27 @@ public class BossSpell : MonoBehaviour
 
             spriteRenderer.sortingOrder = sortingOrder;
         }
+    }
+
+    private void SetDamageActive(bool active)
+    {
+        damageIsActive = active;
 
         if (spellCollider != null)
         {
-            spellCollider.enabled = true;
+            spellCollider.enabled = active;
             spellCollider.isTrigger = true;
         }
+    }
+
+    public void ActivateDamage()
+    {
+        SetDamageActive(true);
+    }
+
+    public void DeactivateDamage()
+    {
+        SetDamageActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -91,6 +116,9 @@ public class BossSpell : MonoBehaviour
 
     private void TryDamagePlayer(Collider2D collision)
     {
+        if (!damageIsActive)
+            return;
+
         if (hasDealtDamage)
             return;
 

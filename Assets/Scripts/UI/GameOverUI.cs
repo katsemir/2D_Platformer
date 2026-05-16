@@ -46,28 +46,6 @@ public class GameOverUI : MonoBehaviour
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
-
-        if (PlayerProgress.Instance != null)
-        {
-            PlayerProgress.Instance.ResetAllProgress();
-        }
-
-        if (GameMetrics.Instance != null)
-        {
-            GameMetrics.Instance.ResetAllMetrics();
-        }
-
-        if (DynamicDifficultyManager.Instance != null)
-        {
-            DynamicDifficultyManager.Instance.ResetModelState();
-        }
-
-        PlayerPrefs.DeleteKey("HasCheckpoint");
-        PlayerPrefs.DeleteKey("CheckpointX");
-        PlayerPrefs.DeleteKey("CheckpointY");
-        PlayerPrefs.DeleteKey("CheckpointScene");
-        PlayerPrefs.Save();
-
         SceneManager.LoadScene(mainMenuSceneName);
     }
 }

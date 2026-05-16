@@ -19,7 +19,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5723575910016851490
 Transform:
   m_ObjectHideFlags: 0
@@ -95,6 +95,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossSpell
   damage: 1
   lifeTime: 1.5
+  damageActiveOnStart: 0
   sortingOrder: 50
   forceVisible: 1
 --- !u!212 &6065328140295482721

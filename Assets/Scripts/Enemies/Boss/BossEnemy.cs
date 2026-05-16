@@ -6,14 +6,14 @@ public class BossEnemy : EnemyBase
     public Transform player;
 
     [Header("Combat")]
-    public float aggroRange = 15f;
+    public float aggroRange = 30f;
     public float castCooldown = 3f;
 
     [Header("Spell")]
     public GameObject spellPrefab;
     public BossSpellPoint[] spellPoints;
     public int spellDamage = 1;
-    public float spellLifeTime = 2f;
+    public float spellLifeTime = 1.5f;
 
     [Header("Cast Timing")]
     public float spellSpawnDelay = 0.5f;

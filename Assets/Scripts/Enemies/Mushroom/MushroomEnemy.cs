@@ -7,10 +7,10 @@ public class MushroomEnemy : EnemyBase
 
     [Header("Movement")]
     public float moveSpeed = 2f;
-    public float aggroRange = 8f;
-    public float meleeRange = 1.5f;
-    public float rangedRange = 5f;
-    public float stopDistance = 0.9f;
+    public float aggroRange = 12f;
+    public float meleeRange = 6f;
+    public float rangedRange = 12f;
+    public float stopDistance = 1f;
 
     [Header("Combat")]
     public int contactDamage = 1;
@@ -23,7 +23,7 @@ public class MushroomEnemy : EnemyBase
     [Header("Projectile")]
     public GameObject projectilePrefab;
     public Transform projectileSpawnPoint;
-    public float projectileSpeed = 10f;
+    public float projectileSpeed = 8f;
     public int projectileDamage = 1;
 
     [Header("Difficulty")]
@@ -55,10 +55,7 @@ public class MushroomEnemy : EnemyBase
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        if (difficultyManager == null)
-        {
-            difficultyManager = FindFirstObjectByType<DynamicDifficultyManager>();
-        }
+        GetDifficultyManager();
 
         if (attackPoint != null)
         {
@@ -75,6 +72,16 @@ public class MushroomEnemy : EnemyBase
         baseAttackCooldown = attackCooldown;
         baseContactDamage = contactDamage;
         baseProjectileDamage = projectileDamage;
+    }
+
+    private DynamicDifficultyManager GetDifficultyManager()
+    {
+        if (difficultyManager == null)
+        {
+            difficultyManager = DynamicDifficultyManager.Instance;
+        }
+
+        return difficultyManager;
     }
 
     void Update()
@@ -122,7 +129,8 @@ public class MushroomEnemy : EnemyBase
                 return;
             }
 
-            bool rangedAttackEnabled = difficultyManager == null || difficultyManager.IsEnemyRangedAttackEnabled;
+            DynamicDifficultyManager dda = GetDifficultyManager();
+            bool rangedAttackEnabled = dda == null || dda.IsEnemyRangedAttackEnabled;
 
             if (rangedAttackEnabled && distanceToPlayer <= rangedRange)
             {
@@ -150,7 +158,9 @@ public class MushroomEnemy : EnemyBase
 
     void ApplyDifficultyStats()
     {
-        if (difficultyManager == null)
+        DynamicDifficultyManager dda = GetDifficultyManager();
+
+        if (dda == null)
         {
             moveSpeed = baseMoveSpeed;
             aggroRange = baseAggroRange;
@@ -160,11 +170,11 @@ public class MushroomEnemy : EnemyBase
             return;
         }
 
-        moveSpeed = baseMoveSpeed * difficultyManager.EnemyMoveSpeedMultiplier;
-        aggroRange = baseAggroRange * difficultyManager.EnemyAggroRangeMultiplier;
-        attackCooldown = baseAttackCooldown * difficultyManager.EnemyMeleeCooldownMultiplier;
-        contactDamage = baseContactDamage + difficultyManager.EnemyMeleeDamageBonus;
-        projectileDamage = baseProjectileDamage + difficultyManager.EnemyProjectileDamageBonus;
+        moveSpeed = baseMoveSpeed * dda.EnemyMoveSpeedMultiplier;
+        aggroRange = baseAggroRange * dda.EnemyAggroRangeMultiplier;
+        attackCooldown = baseAttackCooldown * dda.EnemyMeleeCooldownMultiplier;
+        contactDamage = baseContactDamage + dda.EnemyMeleeDamageBonus;
+        projectileDamage = baseProjectileDamage + dda.EnemyProjectileDamageBonus;
     }
 
     void UpdateAnimator()
@@ -298,7 +308,8 @@ public class MushroomEnemy : EnemyBase
 
     public void SpawnProjectile()
     {
-        bool rangedAttackEnabled = difficultyManager == null || difficultyManager.IsEnemyRangedAttackEnabled;
+        DynamicDifficultyManager dda = GetDifficultyManager();
+        bool rangedAttackEnabled = dda == null || dda.IsEnemyRangedAttackEnabled;
 
         if (!rangedAttackEnabled)
             return;
@@ -397,7 +408,9 @@ public class MushroomEnemy : EnemyBase
         if (isDead)
             return;
 
-        if (difficultyManager != null && !difficultyManager.IsEnemyContactDamageEnabled)
+        DynamicDifficultyManager dda = GetDifficultyManager();
+
+        if (dda != null && !dda.IsEnemyContactDamageEnabled)
             return;
 
         if (!collision.gameObject.CompareTag("Player"))

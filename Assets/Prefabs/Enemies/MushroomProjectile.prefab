@@ -166,4 +166,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MushroomProjectile
   damage: 1
   lifeTime: 4
-  defaultSpeed: 10
+  defaultSpeed: 8

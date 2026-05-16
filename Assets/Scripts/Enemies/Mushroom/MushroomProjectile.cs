@@ -5,7 +5,7 @@ public class MushroomProjectile : MonoBehaviour
     [Header("Projectile Settings")]
     public int damage = 1;
     public float lifeTime = 4f;
-    public float defaultSpeed = 10f;
+    public float defaultSpeed = 8f;
 
     private float direction = 1f;
     private float speed;

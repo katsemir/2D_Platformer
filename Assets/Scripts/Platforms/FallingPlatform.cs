@@ -4,8 +4,8 @@ using UnityEngine;
 public class FallingPlatform : MonoBehaviour
 {
     [Header("Timing")]
-    public float delayBeforeFall = 1f;
-    public float destroyAfterFall = 1f;
+    public float delayBeforeFall = 0.5f;
+    public float destroyAfterFall = 0.5f;
 
     [Header("Physics")]
     public float fallGravityScale = 3f;
