@@ -4,7 +4,7 @@ public class BossSpell : MonoBehaviour
 {
     [Header("Damage")]
     public int damage = 1;
-    public float lifeTime = 2f;
+    public float lifeTime = 1.5f;
 
     [Header("Damage Timing")]
     public bool damageActiveOnStart = false;
