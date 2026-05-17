@@ -2899,7 +2899,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1de448462edc748abbedb849f3888960, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DynamicDifficultyManager
-  metrics: {fileID: 889554671}
+  metrics: {fileID: 0}
   currentDifficulty: 1
   autoEvaluate: 1
   evaluationInterval: 2
@@ -26785,10 +26785,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Coin
       objectReference: {fileID: 0}
-    - target: {fileID: 1211077082140424718, guid: cba689ad073bc45ccbe340ecfa2f956c, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 3723498756721234313, guid: cba689ad073bc45ccbe340ecfa2f956c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3
@@ -26829,18 +26825,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4882186632854393148, guid: cba689ad073bc45ccbe340ecfa2f956c, type: 3}
-      propertyPath: m_Radius
-      value: 0.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8469611901076774027, guid: cba689ad073bc45ccbe340ecfa2f956c, type: 3}
-      propertyPath: saveId
-      value: 4fe124ee-cc48-467e-82cd-041119db45f2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8469611901076774027, guid: cba689ad073bc45ccbe340ecfa2f956c, type: 3}
-      propertyPath: metrics
-      value: 
-      objectReference: {fileID: 889554671}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -156,8 +156,10 @@ public class DynamicDifficultyManager : MonoBehaviour
             {
                 case DifficultyTier.Easy:
                     return easyPlatformSpeedMultiplier;
+
                 case DifficultyTier.Hard:
                     return hardPlatformSpeedMultiplier;
+
                 default:
                     return normalPlatformSpeedMultiplier;
             }
@@ -172,8 +174,10 @@ public class DynamicDifficultyManager : MonoBehaviour
             {
                 case DifficultyTier.Easy:
                     return easyEnemyMoveSpeedMultiplier;
+
                 case DifficultyTier.Hard:
                     return hardEnemyMoveSpeedMultiplier;
+
                 default:
                     return normalEnemyMoveSpeedMultiplier;
             }
@@ -188,8 +192,10 @@ public class DynamicDifficultyManager : MonoBehaviour
             {
                 case DifficultyTier.Easy:
                     return easyEnemyAggroRangeMultiplier;
+
                 case DifficultyTier.Hard:
                     return hardEnemyAggroRangeMultiplier;
+
                 default:
                     return normalEnemyAggroRangeMultiplier;
             }
@@ -204,8 +210,10 @@ public class DynamicDifficultyManager : MonoBehaviour
             {
                 case DifficultyTier.Easy:
                     return easyEnemyMeleeCooldownMultiplier;
+
                 case DifficultyTier.Hard:
                     return hardEnemyMeleeCooldownMultiplier;
+
                 default:
                     return normalEnemyMeleeCooldownMultiplier;
             }
@@ -214,27 +222,44 @@ public class DynamicDifficultyManager : MonoBehaviour
 
     public bool IsEnemyRangedAttackEnabled
     {
-        get { return currentDifficulty != DifficultyTier.Easy; }
+        get
+        {
+            return currentDifficulty != DifficultyTier.Easy;
+        }
     }
 
     public bool IsEnemyContactDamageEnabled
     {
-        get { return currentDifficulty != DifficultyTier.Easy; }
+        get
+        {
+            return currentDifficulty != DifficultyTier.Easy;
+        }
     }
 
     public int EnemyMeleeDamageBonus
     {
-        get { return currentDifficulty == DifficultyTier.Hard ? 1 : 0; }
+        get
+        {
+            return currentDifficulty == DifficultyTier.Hard ? 1 : 0;
+        }
     }
 
     public int EnemyProjectileDamageBonus
     {
-        get { return currentDifficulty == DifficultyTier.Hard ? 1 : 0; }
+        get
+        {
+            return currentDifficulty == DifficultyTier.Hard ? 1 : 0;
+        }
     }
 
     public float PlayerAdditionalInvulnerabilityDuration
     {
-        get { return currentDifficulty == DifficultyTier.Easy ? easyInvulnerabilityDuration : 0f; }
+        get
+        {
+            return currentDifficulty == DifficultyTier.Easy
+                ? easyInvulnerabilityDuration
+                : 0f;
+        }
     }
 
     public bool DeathTrapDealsDamageInsteadOfInstantDeath
@@ -329,14 +354,16 @@ public class DynamicDifficultyManager : MonoBehaviour
         }
 
         rawScore =
-            coinsWeight * normalizedCoins +
-            enemiesKilledWeight * normalizedEnemiesKilled +
-            levelTimeWeight * normalizedLevelTime +
-            levelCompletedWeight * normalizedLevelCompleted +
-            deathsWeight * (1f - normalizedDeaths) +
-            healthLostWeight * (1f - normalizedHealthLost);
+            0.5f +
+            (
+                coinsWeight * normalizedCoins +
+                enemiesKilledWeight * normalizedEnemiesKilled +
+                levelTimeWeight * normalizedLevelTime +
+                levelCompletedWeight * normalizedLevelCompleted -
+                deathsWeight * normalizedDeaths -
+                healthLostWeight * normalizedHealthLost
+            );
 
-        rawScore /= totalWeight;
         rawScore = Mathf.Clamp01(rawScore);
 
         smoothedScore = Mathf.Clamp01(
@@ -367,7 +394,10 @@ public class DynamicDifficultyManager : MonoBehaviour
     public void ForceDifficulty(DifficultyTier difficulty)
     {
         currentDifficulty = difficulty;
-        Debug.Log("DDA -> Forced Difficulty: " + currentDifficulty);
+
+        Debug.Log(
+            "DDA -> Forced Difficulty: " + currentDifficulty
+        );
     }
 
     public void ResetModelState()
@@ -378,9 +408,12 @@ public class DynamicDifficultyManager : MonoBehaviour
         normalizedEnemiesKilled = 0f;
         normalizedLevelTime = 0f;
         normalizedLevelCompleted = 0f;
+
         rawScore = 0.5f;
         smoothedScore = 0.5f;
+
         currentDifficulty = DifficultyTier.Normal;
+
         evaluationTimer = 0f;
     }
 
@@ -389,12 +422,13 @@ public class DynamicDifficultyManager : MonoBehaviour
         if (metrics == null)
             return false;
 
-        return metrics.Deaths > 0 ||
-               metrics.TotalHealthLost > 0 ||
-               metrics.TotalCoinsCollected > 0 ||
-               metrics.EnemiesKilled > 0 ||
-               metrics.LastCompletedLevelTime > 0f ||
-               metrics.LastLevelCompleted;
+        return
+            metrics.Deaths > 0 ||
+            metrics.TotalHealthLost > 0 ||
+            metrics.TotalCoinsCollected > 0 ||
+            metrics.EnemiesKilled > 0 ||
+            metrics.LastCompletedLevelTime > 0f ||
+            metrics.LastLevelCompleted;
     }
 
     private float NormalizeDirect(float value, float maxValue)
@@ -413,12 +447,9 @@ public class DynamicDifficultyManager : MonoBehaviour
         if (maxBadValue <= minGoodValue)
             return 0f;
 
-        if (value <= minGoodValue)
-            return 1f;
+        float normalized =
+            1f - ((value - minGoodValue) / (maxBadValue - minGoodValue));
 
-        if (value >= maxBadValue)
-            return 0f;
-
-        return 1f - ((value - minGoodValue) / (maxBadValue - minGoodValue));
+        return Mathf.Clamp01(normalized);
     }
 }

@@ -3288,7 +3288,7 @@ Transform:
   m_GameObject: {fileID: 676653503}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 18.60925, y: -9.89376, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3306,7 +3306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1de448462edc748abbedb849f3888960, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DynamicDifficultyManager
-  metrics: {fileID: 889554671}
+  metrics: {fileID: 0}
   currentDifficulty: 1
   autoEvaluate: 1
   evaluationInterval: 2
